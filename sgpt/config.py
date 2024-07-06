@@ -87,6 +87,7 @@ class Config(dict):  # type: ignore
             value = str(path.read_text().strip())
         self[key] = value
 
+
     def get(self, key: str) -> str:  # type: ignore
         # Prioritize environment variables over config file.
         value = os.getenv(key) or super().get(key)
