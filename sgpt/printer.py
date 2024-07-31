@@ -42,13 +42,18 @@ class MarkdownPrinter(Printer):
                     "markdown",
                     theme=self.theme,
                     background_color="rgb(0,0,0)",
+                    word_wrap=True,
                 )
                 live.update(markdown, refresh=True)
         return full_completion
 
     def static_print(self, text: str) -> str:
         markdown = Syntax(
-            text, "markdown", theme=self.theme, background_color="rgb(0,0,0)"
+            text,
+            "markdown",
+            theme=self.theme,
+            background_color="rgb(0,0,0)",
+            word_wrap=True,
         )
         self.console.print(markdown)
         return text
