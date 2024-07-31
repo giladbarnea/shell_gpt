@@ -39,6 +39,8 @@ def main(
     ),
     temperature: float = typer.Option(
         0.0,
+        "-t",
+        "--temperature",
         min=0.0,
         max=2.0,
         help="Randomness of generated output.",
@@ -62,6 +64,8 @@ def main(
     ),
     interaction: bool = typer.Option(
         True,
+        "-i",
+        "--interaction",
         help="Interactive mode for --shell option.",
         rich_help_panel="Assistance Options",
     ),
@@ -94,6 +98,7 @@ def main(
     ),
     version: bool = typer.Option(
         False,
+        "-V",
         "--version",
         help="Show version.",
         callback=get_sgpt_version,
@@ -105,6 +110,8 @@ def main(
     ),
     repl: str = typer.Option(
         None,
+        "--repl",
+        "-r",
         help="Start a REPL (Read–eval–print loop) session.",
         rich_help_panel="Chat Options",
     ),
@@ -124,6 +131,8 @@ def main(
     ),
     role: str = typer.Option(
         None,
+        "-r",
+        "--role",
         help="System role for GPT model.",
         rich_help_panel="Role Options",
     ),
