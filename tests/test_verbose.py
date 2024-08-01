@@ -39,10 +39,12 @@ def test_verbose(completion, monkeypatch: pytest.MonkeyPatch):
     right_panel = "\n".join(
         borderless_text
         for line in remove_top_bottom_borders(output_lines)
-        if (borderless_text:= right_of_border(remove_left_right_borders(line)))
+        if (borderless_text := right_of_border(remove_left_right_borders(line)))
     )
-    assert left_panel.replace('\n', '') == DefaultRoles.DEFAULT.get_role().role.replace('\n', '')
-    assert right_panel.replace('\n', '') == prompt.replace('\n', '')
+    assert left_panel.replace("\n", "") == DefaultRoles.DEFAULT.get_role().role.replace(
+        "\n", ""
+    )
+    assert right_panel.replace("\n", "") == prompt.replace("\n", "")
 
 
 def remove_top_bottom_borders(output_lines: list[str]) -> list[str]:
