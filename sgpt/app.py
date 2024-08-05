@@ -172,7 +172,8 @@ def main(
             if "__sgpt__eof__" in line:
                 break
             stdin += line
-        prompt = f"{stdin}\n\n{prompt}" if prompt else stdin
+        horizontal_separator = "#" * 5
+        prompt = f"{stdin}\n\n{horizontal_separator}\n\n{prompt}" if prompt else stdin
         try:
             # Switch to stdin for interactive input.
             if os.name == "posix":
