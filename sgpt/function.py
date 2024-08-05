@@ -48,7 +48,12 @@ class Function:
 
 functions_folder = Path(cfg.get("OPENAI_FUNCTIONS_PATH"))
 functions_folder.mkdir(parents=True, exist_ok=True)
-functions = [Function(str(path)) for path in functions_folder.glob("*.py")]
+functions = []
+path: Path
+for path in functions_folder.glob("*.py"):
+    if path.name.startswith("_"):
+        continue
+    functions.append(Function(str(path)))
 
 
 def get_function(name: str) -> Callable[..., Any]:

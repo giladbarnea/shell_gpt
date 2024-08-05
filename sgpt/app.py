@@ -3,6 +3,7 @@ import os
 # To allow users to use arrow keys in the REPL.
 import readline  # noqa: F401
 import sys
+import typing
 
 import typer
 from click import BadArgumentUsage
@@ -22,6 +23,9 @@ from sgpt.utils import (
     run_command,
 )
 
+if typing.TYPE_CHECKING:
+    from rich.console import RenderableType
+
 
 def main(
     prompt: str = typer.Argument(
@@ -35,6 +39,8 @@ def main(
     ),
     temperature: float = typer.Option(
         0.0,
+        "-t",
+        "--temperature",
         min=0.0,
         max=2.0,
         help="Randomness of generated output.",
@@ -58,6 +64,8 @@ def main(
     ),
     interaction: bool = typer.Option(
         cfg.get("SHELL_INTERACTION") == "true",
+        "-i",
+        "--interaction",
         help="Interactive mode for --shell option.",
         rich_help_panel="Assistance Options",
     ),
@@ -90,6 +98,7 @@ def main(
     ),
     version: bool = typer.Option(
         False,
+        "-V",
         "--version",
         help="Show version.",
         callback=get_sgpt_version,
@@ -101,6 +110,7 @@ def main(
     ),
     repl: str = typer.Option(
         None,
+        "--repl",
         help="Start a REPL (Read–eval–print loop) session.",
         rich_help_panel="Chat Options",
     ),
@@ -120,6 +130,8 @@ def main(
     ),
     role: str = typer.Option(
         None,
+        "-r",
+        "--role",
         help="System role for GPT model.",
         rich_help_panel="Role Options",
     ),
@@ -155,6 +167,12 @@ def main(
         callback=inst_funcs,
         hidden=True,  # Hiding since should be used only once.
     ),
+    verbose: bool = typer.Option(
+        False,
+        "-v",
+        "--verbose",
+        help="Print role and prompt before invoking GPT.",
+    ),
 ) -> None:
     stdin_passed = not sys.stdin.isatty()
 
@@ -172,7 +190,8 @@ def main(
             if "__sgpt__eof__" in line:
                 break
             stdin += line
-        prompt = f"{stdin}\n\n{prompt}" if prompt else stdin
+        horizontal_separator = "#" * 5
+        prompt = f"{stdin}\n\n{horizontal_separator}\n\n{prompt}" if prompt else stdin
         try:
             # Switch to stdin for interactive input.
             if os.name == "posix":
@@ -204,6 +223,9 @@ def main(
     )
 
     function_schemas = (get_openai_schemas() or None) if functions else None
+
+    if verbose:
+        print_debug_info(prompt, role_class)
 
     if repl:
         # Will be in infinite loop here until user exits with Ctrl+C.
@@ -257,6 +279,62 @@ def main(
             )
             continue
         break
+
+
+def print_debug_info(prompt: str, role_class: SystemRole) -> None:
+    from rich import get_console
+    from rich.console import Console
+    from rich.layout import Layout
+    from rich.panel import Panel
+
+    total_rich_padding = 6
+    available_width = get_console().width - total_rich_padding
+    third_of_available_width = available_width // 3
+    system_prompt_height = get_actual_height(
+        Panel(role_class.role), width=third_of_available_width
+    )
+    user_prompt_height = get_actual_height(
+        Panel(prompt), width=third_of_available_width * 2
+    )
+    height = max(system_prompt_height, user_prompt_height)
+    console = Console(height=height)
+    system_message_panel = Panel(
+        role_class.role,
+        title=f"{role_class.name} · System Prompt",
+        border_style="dim white",
+        highlight=False,
+        style="dim cyan",
+    )
+    user_message_panel = Panel(
+        prompt,
+        title="User",
+        border_style="dim white",
+        highlight=True,
+        style="dim magenta",
+    )
+
+    # By default, system panel takes the left third of the screen; user panel takes the right two-thirds.
+    # In the case that the user prompt is significantly shorter than the system prompt, the two panels are split 50/50.
+    user_prompt_height_given_half_width = user_prompt_height * (4 / 3)
+    if user_prompt_height_given_half_width >= system_prompt_height:
+        system_panel_ratio = 1
+        user_panel_ratio = 2
+    else:
+        system_panel_ratio = 1
+        user_panel_ratio = 1
+    layout = Layout()
+    layout.split_row(
+        Layout(system_message_panel, name="system", ratio=system_panel_ratio),
+        Layout(user_message_panel, name="user", ratio=user_panel_ratio),
+    )
+    console.print(layout)
+
+
+def get_actual_height(renderable: "RenderableType", *, width: int) -> int:
+    from rich.console import Console
+
+    console = Console(width=width)
+    return len(console.render_lines(renderable))
 
 
 def entry_point() -> None:

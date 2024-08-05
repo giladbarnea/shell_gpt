@@ -42,7 +42,7 @@ class Handler:
         self.base_url = None if api_base_url == "default" else api_base_url
         self.timeout = int(cfg.get("REQUEST_TIMEOUT"))
 
-        self.markdown = "APPLY MARKDOWN" in self.role.role and markdown
+        self.markdown = "APPLY MARKDOWN" in self.role.role or markdown
         self.code_theme, self.color = cfg.get("CODE_THEME"), cfg.get("DEFAULT_COLOR")
 
     @property
@@ -74,8 +74,8 @@ class Handler:
             yield "\n"
 
         dict_args = json.loads(arguments)
-        joined_args = ", ".join(f'{k}="{v}"' for k, v in dict_args.items())
-        yield f"> @FunctionCall `{name}({joined_args})` \n\n"
+        # joined_args = ", ".join(f'{k}="{v}"' for k, v in dict_args.items())
+        # yield f"> @FunctionCall `{name}({joined_args})` \n\n"
 
         result = get_function(name)(**dict_args)
         if cfg.get("SHOW_FUNCTIONS_OUTPUT") == "true":

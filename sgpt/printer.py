@@ -21,10 +21,8 @@ class Printer(ABC):
     def __call__(self, chunks: Generator[str, None, None], live: bool = True) -> str:
         if live:
             return self.live_print(chunks)
-        with self.console.status("[bold green]Loading..."):
-            full_completion = "".join(chunks)
-        self.static_print(full_completion)
-        return full_completion
+        self.console.print("[bold green]Loading...")
+        return self.static_print("".join(chunks))
 
 
 class MarkdownPrinter(Printer):
@@ -33,18 +31,31 @@ class MarkdownPrinter(Printer):
         self.theme = theme
 
     def live_print(self, chunks: Generator[str, None, None]) -> str:
-        full_completion = ""
-        with Live(console=self.console) as live:
-            for chunk in chunks:
-                full_completion += chunk
-                markdown = Markdown(markup=full_completion, code_theme=self.theme)
-                live.update(markdown, refresh=True)
-        return full_completion
+        return self._render_live(chunks)
 
     def static_print(self, text: str) -> str:
-        markdown = Markdown(markup=text, code_theme=self.theme)
+        markdown = Markdown(
+            markup=text,
+            code_theme=self.theme,
+        )
         self.console.print(markdown)
         return text
+
+    def _render_live(self, chunks: Generator[str, None, None]) -> str:
+        full_completion = ""
+        with Live(
+            console=self.console,
+            vertical_overflow="visible",
+            auto_refresh=False,  # This allows step-debugging with terminal debuggers.
+        ) as live:
+            for chunk in chunks:
+                full_completion += chunk
+                markdown = Markdown(
+                    markup=full_completion,
+                    code_theme=self.theme,
+                )
+                live.update(markdown, refresh=True)
+        return full_completion
 
 
 class TextPrinter(Printer):
