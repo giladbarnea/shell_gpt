@@ -3,7 +3,7 @@ from typing import Generator
 
 from rich.console import Console
 from rich.live import Live
-from rich.syntax import Syntax
+from rich.markdown import Markdown
 from typer import secho
 
 
@@ -37,23 +37,17 @@ class MarkdownPrinter(Printer):
         with Live(console=self.console) as live:
             for chunk in chunks:
                 full_completion += chunk
-                markdown = Syntax(
-                    full_completion,
-                    "markdown",
-                    theme=self.theme,
-                    background_color="rgb(0,0,0)",
-                    word_wrap=True,
+                markdown = Markdown(
+                    markup=full_completion,
+                    code_theme=self.theme,
                 )
                 live.update(markdown, refresh=True)
         return full_completion
 
     def static_print(self, text: str) -> str:
-        markdown = Syntax(
-            text,
-            "markdown",
-            theme=self.theme,
-            background_color="rgb(0,0,0)",
-            word_wrap=True,
+        markdown = Markdown(
+            markup=text,
+            code_theme=self.theme,
         )
         self.console.print(markdown)
         return text
