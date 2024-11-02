@@ -1,3 +1,9 @@
+# ShellGPT: Plus
+A superset of shell_gpt, adding:
+- 🤖 *Anthopic* API support
+- 🎮 Improved CLI: more intuitive and gives more control
+
+
 # ShellGPT
 A command-line productivity tool powered by AI large language models (LLM). This command-line tool offers streamlined generation of **shell commands, code snippets, documentation**, eliminating the need for external resources (like Google search). Supports Linux, macOS, Windows and compatible with all major Shells like PowerShell, CMD, Bash, Zsh, etc.
 
