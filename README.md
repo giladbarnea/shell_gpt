@@ -1,7 +1,8 @@
 # ShellGPT: Plus
 A superset of shell_gpt, adding:
-- 🤖 *Anthopic* API support
+- 🤖 **Anthopic** API support
 - 🎮 Improved CLI: more intuitive and gives more control
+- Unrestricted "Write-your-own-tools" functionality allowing to plug in any code in any complexity
 
 
 # ShellGPT
