@@ -18,7 +18,7 @@ def mock_comp(tokens_string):
     return [
         ChatCompletionChunk(
             id="foo",
-            model=cfg.get("DEFAULT_MODEL"),
+            model=cfg.model,
             object="chat.completion.chunk",
             choices=[
                 StreamChoice(
@@ -51,7 +51,7 @@ def comp_args(role, prompt, **kwargs):
             {"role": "system", "content": role.role},
             {"role": "user", "content": prompt},
         ],
-        "model": cfg.get("DEFAULT_MODEL"),
+        "model": cfg.model,
         "temperature": 0.0,
         "top_p": 1.0,
         "stream": True,

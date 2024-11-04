@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import Any, Callable, Dict, Generator, List, Optional
 
 from ..cache import Cache
-from ..config import cfg
+from ..config import USE_ANTHROPIC, USE_OPENAI, cfg
 from ..function import get_function
 from ..printer import MarkdownPrinter, Printer, TextPrinter
 from ..role import DefaultRoles, SystemRole
@@ -11,23 +11,65 @@ from ..role import DefaultRoles, SystemRole
 completion: Callable[..., Any] = lambda *args, **kwargs: Generator[Any, None, None]
 
 base_url = cfg.get("API_BASE_URL")
-use_litellm = cfg.get("USE_LITELLM") == "true"
+# use_litellm = cfg.get("USE_LITELLM") == "true"
 additional_kwargs = {
     "timeout": int(cfg.get("REQUEST_TIMEOUT")),
-    "api_key": cfg.get("OPENAI_API_KEY"),
+    # "api_key": cfg.get("OPENAI_API_KEY"),
     "base_url": None if base_url == "default" else base_url,
 }
 
-if use_litellm:
+if cfg.get("USE_LITELLM") == "true":
     import litellm  # type: ignore
 
     completion = litellm.completion
     litellm.suppress_debug_info = True
-    additional_kwargs.pop("api_key")
-else:
+    # additional_kwargs.pop("api_key")
+elif USE_ANTHROPIC:
+    import anthropic
+
+    client = anthropic.Anthropic(api_key=cfg.get("ANTHROPIC_API_KEY"))
+
+    def _adapt_parameters_to_anthropic(*args, **kwargs):
+        if 'system' in kwargs:
+            return args, kwargs
+        if any(
+            isinstance(arg,dict) and arg.get("role") == "system" for arg in args
+        ):
+            return args, kwargs
+        messages = kwargs.pop("messages", None)
+        args_without_messages = []
+        if messages is None:
+            for arg in args:
+                if isinstance(arg, list) and arg and "role" in arg[0]:
+                    messages = arg
+                else:
+                    args_without_messages.append(arg)
+        else:
+            args_without_messages = args
+        messages_without_system = []
+        system_message = None
+        for message in messages:
+            if message["role"] == "system":
+                system_message = message
+            else:
+                message["content"] = [{
+                    "type": "text",
+                    "text": message["content"],
+                }]
+                messages_without_system.append(message)
+        kwargs["messages"] = messages_without_system
+        kwargs["system"] = system_message["content"]
+        assert kwargs["model"] == "claude-3-5-sonnet-20241022", kwargs["model"]
+        return args_without_messages, kwargs
+
+    def completion(*args, **kwargs):
+        args, kwargs = _adapt_parameters_to_anthropic(*args, **kwargs)
+        return client.messages.create(*args, **kwargs)
+    additional_kwargs = {}
+elif USE_OPENAI:
     from openai import OpenAI
 
-    client = OpenAI(**additional_kwargs)  # type: ignore
+    client = OpenAI(**additional_kwargs, api_key=cfg.get("OPENAI_API_KEY"))  # type: ignore
     completion = client.chat.completions.create
     additional_kwargs = {}
 

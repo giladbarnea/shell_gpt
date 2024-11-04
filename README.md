@@ -395,7 +395,7 @@ CACHE_PATH=/tmp/shell_gpt/cache
 # Request timeout in seconds.
 REQUEST_TIMEOUT=60
 # Default OpenAI model to use.
-DEFAULT_MODEL=gpt-4o
+DEFAULT_MODEL=gpt-4o  # TODO: Change to MODEL_PRECEDENCE
 # Default color for shell and code completions.
 DEFAULT_COLOR=magenta
 # When in --shell mode, default to "Y" for no input.

@@ -34,7 +34,7 @@ def main(
         help="The prompt to generate completions for.",
     ),
     model: str = typer.Option(
-        cfg.get("DEFAULT_MODEL"),
+        cfg.model,
         help="Large language model to use.",
     ),
     temperature: float = typer.Option(

@@ -4,7 +4,6 @@ from abc import ABCMeta
 from pathlib import Path
 from typing import Any, Callable, Dict, List
 
-from .config import cfg
 
 
 class Function:
@@ -46,18 +45,24 @@ class Function:
         return module
 
 
-functions_folder = Path(cfg.get("OPENAI_FUNCTIONS_PATH"))
-functions_folder.mkdir(parents=True, exist_ok=True)
-functions = []
-path: Path
-for path in functions_folder.glob("*.py"):
-    if path.name.startswith("_"):
-        continue
-    functions.append(Function(str(path)))
+def load_functions() -> List[Function]:
+    from .config import cfg
+
+    functions_folder = Path(cfg.get("OPENAI_FUNCTIONS_PATH"))
+    functions_folder.mkdir(parents=True, exist_ok=True)
+    functions = []
+    path: Path
+    for path in functions_folder.glob("*.py"):
+        if path.name.startswith("_"):
+            continue
+        functions.append(Function(str(path)))
+    return functions
+
+
 
 
 def get_function(name: str) -> Callable[..., Any]:
-    for function in functions:
+    for function in load_functions():
         if function.name == name:
             return function.execute
     raise ValueError(f"Function {name} not found")
@@ -65,7 +70,7 @@ def get_function(name: str) -> Callable[..., Any]:
 
 def get_openai_schemas() -> List[Dict[str, Any]]:
     transformed_schemas = []
-    for function in functions:
+    for function in load_functions():
         schema = {
             "type": "function",
             "function": {
