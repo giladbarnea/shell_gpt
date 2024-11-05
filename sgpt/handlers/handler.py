@@ -4,7 +4,6 @@ from typing import Any, Callable, Dict, Generator, List, Optional
 
 from ..cache import Cache
 from ..config import cfg
-from ..function import get_function
 from ..printer import MarkdownPrinter, Printer, TextPrinter
 from ..role import DefaultRoles, SystemRole
 
@@ -76,7 +75,8 @@ class Handler:
         dict_args = json.loads(arguments)
         # joined_args = ", ".join(f'{k}="{v}"' for k, v in dict_args.items())
         # yield f"> @FunctionCall `{name}({joined_args})` \n\n"
-
+        
+        from ..function import get_function
         result = get_function(name)(**dict_args)
         if cfg.get("SHOW_FUNCTIONS_OUTPUT") == "true":
             yield f"```text\n{result}\n```\n"
